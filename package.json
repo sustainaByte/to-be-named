@@ -1,8 +1,8 @@
 {
-  "name": "teampulse-api-service",
+  "name": "api-service",
   "private": true,
-  "version": "1.14.2",
-  "description": "backend service for internship project",
+  "version": "1.1.1",
+  "description": "backend service for the project",
   "license": "MIT",
   "scripts": {
     "build": "nest build",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://gitlab.int.hypercloud.ro/internship23/backend-services.git"
+    "url": "https://github.com/sustainaByte/api-service.git"
   },
   "dependencies": {
     "@nestjs/cli": "^10.1.12",

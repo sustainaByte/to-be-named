@@ -45,10 +45,11 @@ export class UserController {
         data: {
           type: "object",
           properties: {
+            name: { type: "string" },
+            surname: { type: "string" },
             email: { type: "string" },
             phoneNumber: { type: "string" },
-            companyName: { type: "string" },
-            employeesNo: { type: "number" },
+            roles: { type: "array", items: { type: "string" } },
           },
         },
       },
@@ -63,17 +64,16 @@ export class UserController {
     description: "A user with the same email already exists.",
     schema: ERROR_BODY,
   })
-  async registerUser(@Body() createOrganizationDto: CreateOrganizationDto) {
+  async registerUser(@Body() registerUserDto: RegisterUserDto) {
     try {
       await this.userService.createOrganization(createOrganizationDto)
       this.logger.log(`User with ${createOrganizationDto.email} was created`)
       return formatSuccessResponseDto(
-        createOrganizationDto,
+        registerUserDto,
+        "name",
+        "surname",
         "email",
         "phoneNumber",
-        "companyName",
-        "employmentType",
-        "employeesNo",
       )
     } catch (error) {
       this.logger.error(error)
