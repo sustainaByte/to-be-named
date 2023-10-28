@@ -9,18 +9,17 @@ import { Reflector } from "@nestjs/core"
 
 import { UserRole, UserRoleDefinition } from "src/@types/index"
 import { formatErrorResponse } from "src/utils/index"
-import { AuthService } from "src/services/index"
 import {
   FORBIDDEN_EXCEPTION,
   UNAUTHORIZED_EXCEPTION,
 } from "src/constants/index"
 import { RoleRepository } from "src/repositories"
+import { verifyToken } from "src/utils/verifiyToken"
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly authService: AuthService,
     private readonly roleRepository: RoleRepository,
   ) {}
 
@@ -34,7 +33,7 @@ export class RolesGuard implements CanActivate {
       }
       const request = context.switchToHttp().getRequest()
       const token = request.headers.authorization?.split(" ")[1]
-      const decodedToken = await this.authService.verifyToken(token)
+      const decodedToken = await verifyToken(token)
 
       const userRoles = await this.roleRepository.find({
         _id: decodedToken.roles,

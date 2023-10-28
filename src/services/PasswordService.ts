@@ -4,8 +4,9 @@ import * as bcrypt from "bcrypt"
 
 import { ForgotPasswordDto, ResetPasswordDto } from "src/dto"
 import { CustomLogger, formatErrorResponse } from "src/utils"
-import { AuthService, EmailService } from "src/services"
+import { EmailService } from "src/services"
 import { UserRepository } from "src/repositories"
+import { verifyToken } from "src/utils/verifiyToken"
 
 @Injectable()
 export class PasswordService {
@@ -13,7 +14,6 @@ export class PasswordService {
     private readonly userRepository: UserRepository,
     private readonly emailService: EmailService,
     private readonly logger: CustomLogger,
-    private readonly authService: AuthService,
   ) {}
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
@@ -39,7 +39,7 @@ export class PasswordService {
   ): Promise<void> {
     try {
       if (resetPasswordDto.currentPassword) {
-        const decodedToken = await this.authService.verifyToken(authToken)
+        const decodedToken = await verifyToken(authToken)
         const email = decodedToken.email
         const userId = decodedToken.userId
         const user = await this.userRepository.findById(userId)
@@ -57,7 +57,7 @@ export class PasswordService {
         this.logger.log(`User with ${email} reset their password`)
       }
       const token = resetPasswordDto.resetToken
-      const decodedToken = await this.authService.verifyToken(token)
+      const decodedToken = await verifyToken(token)
       const newPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10)
 
       const email = decodedToken.email

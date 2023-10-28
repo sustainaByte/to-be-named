@@ -8,7 +8,7 @@ RUN npm install --prefer-offline
 
 COPY . .
 
-RUN npm run lint && npm audit
+RUN npm run format && npm run lint && npm audit
 
 EXPOSE 5000
 

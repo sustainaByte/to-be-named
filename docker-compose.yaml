@@ -11,15 +11,5 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
-
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: backend
-    ports:
-      - 5000:5000
-    depends_on:
-      - mongodb
-    environment:
-      MONGO_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@${MONGO_INITDB_IP}/${MONGO_INITDB_DATABASE}
+    volumes:
+      - ./data:/data/db
