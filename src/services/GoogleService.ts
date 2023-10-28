@@ -17,23 +17,21 @@ export class GoogleService {
       const response = await axios.get(`${BASE_API}?access_token=${token}`)
       const data = response.data
 
-      const user = await this.userRepository.find({ email: data.email })
+      const user = await this.userRepository.findOne({ email: data.email })
       if (!user) {
         throw new NotFoundException("User not found")
       }
       const payload: JwtPayload = {
-        userId: user[0]._id,
-        email: user[0].email,
-        roles: user[0].roles,
-        organizationId: user[0].organizationId,
-        departmentId: user[0].departmentId,
+        userId: user._id,
+        email: user.email,
+        roles: user.roles.toString().split(","),
       }
 
       const jwtToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: "3600s",
+        expiresIn: process.env.JWT_EXPIRATION_TIME,
       })
       const refreshToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: `${REFRESH_TOKEN_EXP}m`,
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
       })
 
       return { jwtToken, refreshToken, expiresIn: REFRESH_TOKEN_EXP }

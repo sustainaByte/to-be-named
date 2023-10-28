@@ -20,7 +20,7 @@ import {
   formatSuccessResponse,
   CustomLogger,
 } from "src/utils/index"
-import { CreateOrganizationDto, LoginUserDto } from "src/dto"
+import { LoginUserDto, RegisterUserDto } from "src/dto"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
 import { UserService } from "src/services"
@@ -66,8 +66,8 @@ export class UserController {
   })
   async registerUser(@Body() registerUserDto: RegisterUserDto) {
     try {
-      await this.userService.createOrganization(createOrganizationDto)
-      this.logger.log(`User with ${createOrganizationDto.email} was created`)
+      await this.userService.registerUser(registerUserDto)
+      this.logger.log(`User with ${registerUserDto.email} was created`)
       return formatSuccessResponseDto(
         registerUserDto,
         "name",

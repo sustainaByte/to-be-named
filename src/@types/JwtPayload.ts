@@ -1,9 +1,5 @@
-import { UserRole } from "./UserRole"
-
 export interface JwtPayload {
   userId: string
-  roles: UserRole[]
+  roles: string[]
   email: string
-  organizationId: string
-  departmentId: string
 }

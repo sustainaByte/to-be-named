@@ -1,12 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import {
-  IsNotEmpty,
-  Matches,
-  Length,
-  IsString,
-  IsObject,
-  IsOptional,
-} from "class-validator"
+import { IsNotEmpty, Matches, Length, IsOptional } from "class-validator"
 import {
   PASSWORD_COMPLEXITY_MESSAGE,
   PASSWORD_LENGTH_MESSAGE,

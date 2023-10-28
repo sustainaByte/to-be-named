@@ -2,6 +2,7 @@ import { UpdateQuery, FilterQuery, PipelineStage } from "mongoose"
 
 export interface Repository<T> {
   findById(id: string): Promise<T | null>
+  findOne(filter: FilterQuery<T>, selectedFields?: string[]): Promise<T | null>
   create(createDto): Promise<T>
   update(
     filter: FilterQuery<T>,

@@ -1,8 +1,9 @@
 import { Types } from "mongoose"
-
 export interface User {
-  password: string
+  name: string
+  surname: string
   email: string
+  password: string
+  phoneNumber: string
   roles: Types.ObjectId[]
-  organizationId: Types.ObjectId
 }

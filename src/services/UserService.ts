@@ -6,60 +6,32 @@ import {
 import * as bcrypt from "bcrypt"
 import * as jwt from "jsonwebtoken"
 
-import {
-  REFRESH_TOKEN_EXP,
-} from "src/constants"
-import {
-  CreateOrganizationDto,
-} from "src/dto"
+import { REFRESH_TOKEN_EXP } from "src/constants"
+import { LoginUserDto, RegisterUserDto } from "src/dto"
 import { User } from "src/db/schemas"
-import {
-  formatErrorResponse,
-} from "src/utils"
+import { formatErrorResponse } from "src/utils"
 import { JwtPayload, UserRole } from "src/@types"
-import {
-  OrganizationRepository,
-  RoleRepository,
-  UserRepository,
-} from "src/repositories"
+import { RoleRepository, UserRepository } from "src/repositories"
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly organizationRepository: OrganizationRepository,
     private readonly roleRepository: RoleRepository,
   ) {}
 
-  async registerUser(
-    registerUserDto: RegisterUserDto,
-  ): Promise<User> {
-    const { companyName, employeesNo, phoneNumber, password } = createUserDto
-    if (!companyName || !employeesNo || !phoneNumber || !password) {
-      throw new BadRequestException({
-        message: "Please fill in all required fields",
-      })
-    }
-    const hashedPassword = await bcrypt.hash(password, 10)
+  async registerUser(registerUserDto: RegisterUserDto): Promise<User> {
+    const hashedPassword = await bcrypt.hash(registerUserDto.password, 10)
 
     try {
-      const orgData = {
-        companyName,
-        employeesNo,
-        phoneNumber,
-      }
-
-      const createdOrg = await this.organizationRepository.create(orgData)
-
-      const adminRoleId = await this.roleRepository.find({
-        name: UserRole.ADMIN,
+      const standardRole = await this.roleRepository.find({
+        name: UserRole.STANDARD_USER,
       })
 
       const createdUser = await this.userRepository.create({
         ...registerUserDto,
         password: hashedPassword,
-        roles: [adminRoleId[0]._id],
-        organizationId: createdOrg._id,
+        roles: [standardRole[0]._id],
       })
 
       return createdUser
@@ -67,36 +39,35 @@ export class UserService {
       if (error.code === 11000) {
         throw new ConflictException(formatErrorResponse(error))
       }
-      throw error
+      throw new BadRequestException(formatErrorResponse(error))
     }
   }
 
-  async loginUser(LogInDto: {
-    email: string
-    password: string
-  }): Promise<object> {
+  async loginUser(loginUserDto: LoginUserDto): Promise<object> {
     try {
-      const { email, password } = LogInDto
-      const user = (await this.userRepository.findOne({ email }, ["-__v"])) as User
+      const user = (await this.userRepository.findOne({
+        email: loginUserDto.email,
+      })) as User
 
-      if (!user || !(await bcrypt.compare(password, user.password))) {
+      if (
+        !user ||
+        !(await bcrypt.compare(loginUserDto.password, user.password))
+      ) {
         throw new BadRequestException("Invalid credentials")
       }
 
       const payload: JwtPayload = {
         userId: user._id,
         email: user.email,
-        roles: user.roles,
-        organizationId: user.organizationId,
-        departmentId: user.departmentId,
+        roles: user.roles.toString().split(","),
       }
 
       const jwtToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: "3600s",
+        expiresIn: process.env.JWT_EXPIRATION_TIME,
       })
 
       const refreshToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: `${REFRESH_TOKEN_EXP}m`,
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
       })
 
       return { jwtToken, refreshToken, expiresIn: REFRESH_TOKEN_EXP }

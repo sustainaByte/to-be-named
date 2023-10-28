@@ -10,7 +10,6 @@ import { APP_GUARD } from "@nestjs/core"
 
 import { DatabaseConnection } from "./db/connection"
 import { customLoggerProvider } from "./utils/customLoggerProvider"
-import { GoogleStrategy } from "./utils/GoogleStrategy"
 import { AuthMiddleware } from "./middlewares/AuthMiddleware"
 import { RolesGuard } from "./guards/RolesGuard"
 import { controllers } from "./controllers"
@@ -33,7 +32,6 @@ import { repositories } from "./repositories"
       useClass: RolesGuard,
     },
     customLoggerProvider,
-    GoogleStrategy,
     AuthMiddleware,
   ],
 })
