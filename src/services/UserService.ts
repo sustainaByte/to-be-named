@@ -27,7 +27,7 @@ export class UserService {
       const standardRole = await this.roleRepository.find({
         name: UserRole.STANDARD_USER,
       })
-
+  
       const createdUser = await this.userRepository.create({
         ...registerUserDto,
         password: hashedPassword,
