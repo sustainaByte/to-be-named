@@ -109,7 +109,7 @@ describe("RolesGuard", () => {
       const mockReflector = {
         getAllAndOverride: jest.fn().mockReturnValue([
           {
-            name: UserRole.ADMIN,
+            name: UserRole.PREMIUM,
             priority: 1,
           },
         ]),

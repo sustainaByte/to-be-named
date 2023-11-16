@@ -1,3 +1,6 @@
+v 1.2.0
+
+- add create post functionality for authenticated users with following endpoints: - "/posts" - POST
 
 v 1.1.1
 
