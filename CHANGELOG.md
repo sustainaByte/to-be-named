@@ -1,3 +1,7 @@
+v 1.3.0
+
+- add functionality to get all posts with the following endpoints: - "/posts" - GET - "/posts/{postId}" - GET
+
 v 1.2.0
 
 - add create post functionality for authenticated users with following endpoints: - "/posts" - POST
