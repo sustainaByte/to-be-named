@@ -12,18 +12,13 @@ import {
 } from "@nestjs/common"
 import {
   ApiBadRequestResponse,
-  ApiConflictResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger"
 
-import {
-  formatSuccessResponseDto,
-  formatSuccessResponse,
-  CustomLogger,
-} from "src/utils/index"
+import { formatSuccessResponse, CustomLogger } from "src/utils/index"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
 import { PostService } from "src/services"
