@@ -4,6 +4,6 @@ export interface Post {
   content: string
   title: string
   kudos: number
-  mediaUrl: string[]
+  mediaUrl: Buffer[]
   creatorId: Types.ObjectId
 }

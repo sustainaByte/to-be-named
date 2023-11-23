@@ -146,7 +146,7 @@ export class PostController {
             content: { type: "string" },
             creatorId: { type: "string" },
             kudos: { type: "number" },
-            mediaURL: { type: "array", items: { type: "string" } },
+            mediaURL: { type: "array", items: { type: "buffer" } },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
             _id: { type: "string" },
