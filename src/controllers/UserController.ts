@@ -5,7 +5,6 @@ import {
   HttpCode,
   UseGuards,
   Inject,
-  Get,
 } from "@nestjs/common"
 import {
   ApiBadRequestResponse,
@@ -82,7 +81,7 @@ export class UserController {
     }
   }
 
-  @Get("login")
+  @Post("login")
   @ApiOperation({ summary: "Login user" })
   @ApiResponse({
     status: 200,

@@ -14,8 +14,9 @@ export class Post extends Document implements PostType {
   @Prop({ default: 0 })
   kudos: number
 
-  @Prop()
-  mediaUrl: string[]
+  //TODO: Encode/Decode
+  @Prop([Buffer])
+  mediaUrl: Buffer[]
 
   @Prop({ required: true })
   creatorId: Types.ObjectId

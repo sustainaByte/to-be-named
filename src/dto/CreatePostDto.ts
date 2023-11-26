@@ -11,7 +11,7 @@ export class CreatePostDto {
   readonly content: string
 
   @ApiProperty({ description: "Media URL", required: false })
-  @IsString()
+  @IsString({ each: true })
   @IsOptional()
   readonly mediaUrl?: string[]
 }

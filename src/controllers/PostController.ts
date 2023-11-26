@@ -8,21 +8,17 @@ import {
   Get,
   SetMetadata,
   Req,
+  Param,
 } from "@nestjs/common"
 import {
   ApiBadRequestResponse,
-  ApiConflictResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger"
 
-import {
-  formatSuccessResponseDto,
-  formatSuccessResponse,
-  CustomLogger,
-} from "src/utils/index"
+import { formatSuccessResponse, CustomLogger } from "src/utils/index"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
 import { PostService } from "src/services"
@@ -82,6 +78,97 @@ export class PostController {
       )
 
       this.logger.log("Post created successfully")
+      return formatSuccessResponse(response)
+    } catch (error) {
+      this.logger.error(error)
+      throw error
+    }
+  }
+
+  @Get()
+  @ApiOperation({ summary: "Get all posts" })
+  @ApiResponse({
+    status: 200,
+    description: "Posts retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+              creatorId: { type: "string" },
+              kudos: { type: "number" },
+              mediaURL: { type: "array", items: { type: "string" } },
+              createdAt: { type: "string", format: "date-time" },
+              updatedAt: { type: "string", format: "date-time" },
+              _id: { type: "string" },
+              __v: { type: "number" },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @HttpCode(200)
+  async getAllPosts() {
+    try {
+      const response = await this.postService.getAllPosts()
+      return formatSuccessResponse(response)
+    } catch (error) {
+      this.logger.error(error)
+      throw error
+    }
+  }
+
+  @Get(":postId")
+  @ApiOperation({ summary: "Get all posts" })
+  @ApiResponse({
+    status: 200,
+    description: "Posts retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            content: { type: "string" },
+            creatorId: { type: "string" },
+            kudos: { type: "number" },
+            mediaURL: { type: "array", items: { type: "buffer" } },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            _id: { type: "string" },
+            __v: { type: "number" },
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @HttpCode(200)
+  async getPost(@Param("postId") postId: string) {
+    try {
+      const response = await this.postService.getPost(postId)
       return formatSuccessResponse(response)
     } catch (error) {
       this.logger.error(error)
