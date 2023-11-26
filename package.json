@@ -1,7 +1,7 @@
 {
   "name": "api-service",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "backend service for the project",
   "license": "MIT",
   "scripts": {

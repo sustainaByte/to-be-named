@@ -18,6 +18,9 @@ export class User extends Document implements UserType {
   @Prop({ required: true })
   password: string
 
+  @Prop({ default: 0 })
+  ecoPoints: number
+
   @Prop({ required: true })
   phoneNumber: string
 
