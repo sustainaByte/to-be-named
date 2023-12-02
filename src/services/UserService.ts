@@ -12,6 +12,7 @@ import { User } from "src/db/schemas"
 import { formatErrorResponse } from "src/utils"
 import { JwtPayload, UserRole } from "src/@types"
 import { RoleRepository, UserRepository } from "src/repositories"
+import { SwitchRoleDto } from "../dto/SwitchRoleDto"
 
 @Injectable()
 export class UserService {
@@ -74,5 +75,47 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(formatErrorResponse(error))
     }
-  }
+    }
+
+
+    async switchToStandardUser(id: SwitchRoleDto): Promise<User> {
+        return this.switchUserRole(id, UserRole.STANDARD_USER);
+    }
+
+    async switchToPremiumUser(id: SwitchRoleDto): Promise<User> {
+        return this.switchUserRole(id, UserRole.PREMIUM);
+    }
+
+    private async switchUserRole(id: SwitchRoleDto, targetRole: UserRole): Promise<User> {
+        try {
+            const user = await this.userRepository.findById(id.id);
+
+            if (!user) {
+                throw new BadRequestException("User not found" + id.id);
+            }
+
+
+            const targetRoleObject = await this.roleRepository.find({
+                name: targetRole,
+            });
+
+            if (!targetRoleObject) {
+                throw new BadRequestException("Target role not found");
+            }
+
+            const currentRole = user.roles ? user.roles.toString() : '';
+
+            const updatedRoles =
+                currentRole === targetRoleObject[0]._id.toString()
+                    ? user.roles
+                    : [targetRoleObject[0]._id];
+
+            user.roles = updatedRoles;
+            const updatedUser = await user.save();
+
+            return updatedUser;
+        } catch (error) {
+            throw new BadRequestException(formatErrorResponse(error));
+        }
+    }
 }
