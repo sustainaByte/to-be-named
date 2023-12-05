@@ -13,6 +13,7 @@ import { formatErrorResponse } from "src/utils"
 import { JwtPayload, UserRole } from "src/@types"
 import { RoleRepository, UserRepository } from "src/repositories"
 import { SwitchRoleDto } from "../dto/SwitchRoleDto"
+import { UpdateUserDto } from "../dto/UpdateUserDto"
 
 @Injectable()
 export class UserService {
@@ -115,6 +116,33 @@ export class UserService {
 
             return updatedUser;
         } catch (error) {
+            throw new BadRequestException(formatErrorResponse(error));
+        }
+    }
+
+    async updateUser(updateUserDto: UpdateUserDto) {
+        try {
+            const user = await this.userRepository.findById(updateUserDto.id);
+            if (updateUserDto.name != null && updateUserDto.name != "") {
+                user.name = updateUserDto.name;
+            }
+            if (updateUserDto.surname != null && updateUserDto.surname != "") {
+                user.surname = updateUserDto.surname;
+            }
+            if (updateUserDto.email != null && updateUserDto.email != "") {
+                user.email = updateUserDto.email;
+            }
+            if (updateUserDto.phoneNumber != null && updateUserDto.phoneNumber != "") {
+                user.phoneNumber = updateUserDto.phoneNumber;
+            }
+            if (updateUserDto.address != null) {
+                user.address = updateUserDto.address;
+            }
+
+            const updatedUser = await user.save();
+            return updatedUser;
+        }
+        catch (error) {
             throw new BadRequestException(formatErrorResponse(error));
         }
     }

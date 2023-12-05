@@ -26,6 +26,7 @@ import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
 import { UserService } from "src/services"
 import { SwitchRoleDto } from "../dto/SwitchRoleDto"
+import { UpdateUserDto } from "../dto/UpdateUserDto"
 
 
 @Controller("users")
@@ -191,6 +192,47 @@ export class UserController {
     async switchToPremiumUser(@Body() id: SwitchRoleDto) {
         try {
             const updatedUser = await this.userService.switchToPremiumUser(id);
+            return formatSuccessResponse(updatedUser);
+        } catch (error) {
+            this.logger.error(error);
+            throw error;
+        }
+    }
+
+    @Patch("/edit_user")
+    @ApiOperation({ summary: "Edit user's fields" })
+    @ApiResponse({
+        status: 200,
+        description: "User updated successfully",
+        schema: {
+            properties: {
+                data: {
+                    type: "object",
+                    properties: {
+                        name: { type: "string" },
+                        surname: { type: "string" },
+                        email: { type: "string" },
+                        phoneNumber: { type: "string" }
+                    },
+                },
+            },
+        },
+    })
+    @ApiBadRequestResponse({
+        description:
+            "Invalid request.",
+        schema: ERROR_BODY,
+    })
+    @ApiUnauthorizedResponse({
+        description:
+            "Unauthorized access.",
+        schema: ERROR_BODY,
+    })
+    async updateUser(
+        @Body() updateUserDto: UpdateUserDto
+    ) {
+        try {
+            const updatedUser = await this.userService.updateUser(updateUserDto);
             return formatSuccessResponse(updatedUser);
         } catch (error) {
             this.logger.error(error);
