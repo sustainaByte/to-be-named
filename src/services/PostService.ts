@@ -44,4 +44,49 @@ export class PostService {
       throw new BadRequestException(formatErrorResponse(error))
     }
   }
+
+  async likePost(postId: string, userId: string): Promise<Post> {
+    try {
+      const post = (await this.postRepository.findOne({
+        _id: this.postRepository.toObjectId(postId),
+      })) as Post
+
+      const index: number = post.kudos.indexOf(userId)
+
+      if (index != -1)
+        post.kudos.splice(index, 1)
+      else
+        post.kudos.push(userId)
+
+      return post
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
+    }
+  }
+
+  async getKudosForPost(postId: string): Promise<number> {
+    try {
+      const post = (await this.postRepository.findOne({
+        _id: this.postRepository.toObjectId(postId),
+      })) as Post
+
+      return post.kudos.length;
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
+    }
+  }
+
+  async isPostLikedByUser(postId: string, userId: string): Promise<boolean> {
+    try {
+      const post = (await this.postRepository.findOne({
+        _id: this.postRepository.toObjectId(postId),
+      })) as Post
+
+      const index: number = post.kudos.indexOf(userId)
+
+      return index != -1
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
+    }
+  }
 }

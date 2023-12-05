@@ -12,7 +12,7 @@ export class Post extends Document implements PostType {
   content: string
 
   @Prop({ default: 0 })
-  kudos: number
+  kudos: string[]
 
   //TODO: Encode/Decode
   @Prop([Buffer])
