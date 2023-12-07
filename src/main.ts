@@ -26,6 +26,6 @@ async function bootstrap() {
     }),
   )
   app.useGlobalFilters(new CustomValidationExceptionFilter())
-  await app.listen(5000, "localhost")
+  await app.listen(5000, "0.0.0.0")
 }
 bootstrap()
