@@ -199,7 +199,7 @@ export class UserController {
         }
     }
 
-    @Patch("/edit_user")
+    @Patch(":userId")
     @ApiOperation({ summary: "Edit user's fields" })
     @ApiResponse({
         status: 200,

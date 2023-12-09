@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from "@nestjs/common"
 import * as bcrypt from "bcrypt"
 import * as jwt from "jsonwebtoken"
@@ -121,29 +122,21 @@ export class UserService {
     }
 
     async updateUser(updateUserDto: UpdateUserDto) {
-        try {
-            const user = await this.userRepository.findById(updateUserDto.id);
-            if (updateUserDto.name != null && updateUserDto.name != "") {
-                user.name = updateUserDto.name;
-            }
-            if (updateUserDto.surname != null && updateUserDto.surname != "") {
-                user.surname = updateUserDto.surname;
-            }
-            if (updateUserDto.email != null && updateUserDto.email != "") {
-                user.email = updateUserDto.email;
-            }
-            if (updateUserDto.phoneNumber != null && updateUserDto.phoneNumber != "") {
-                user.phoneNumber = updateUserDto.phoneNumber;
-            }
-            if (updateUserDto.address != null) {
-                user.address = updateUserDto.address;
-            }
+        const user = (await this.userRepository.findOne({
+            email: updateUserDto.email,
+        })) as User
 
-            const updatedUser = await user.save();
-            return updatedUser;
+        if (!user) {
+            throw new NotFoundException('User not found');
         }
-        catch (error) {
-            throw new BadRequestException(formatErrorResponse(error));
-        }
+
+        const updatedUser = this.userRepository.update(
+            { _id: user._id },
+            { $set: updateUserDto }, // update user with the new data
+            ['name', 'surname', 'email', 'phoneNumber', 'address'] // select these fields to return
+        );
+
+        return updatedUser;
     }
+
 }
