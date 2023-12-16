@@ -9,8 +9,8 @@ export class User extends Document implements UserType {
   @Prop()
   name: string
 
-  @Prop()
-  surname: string
+  @Prop({ required: false })
+  surname?: string
 
   @Prop({ required: true, unique: true })
   email: string
@@ -26,6 +26,9 @@ export class User extends Document implements UserType {
 
   @Prop({ required: true })
   address: AddressDto
+
+  @Prop({ required: false, default: false })
+  isOrganization?: boolean
 
   @Prop({ type: [{ type: Types.ObjectId, ref: "Role" }], required: true })
   roles: Types.ObjectId[]

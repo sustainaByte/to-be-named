@@ -5,6 +5,8 @@ import {
   IsNotEmpty,
   Length,
   Matches,
+  IsObject,
+  IsOptional,
 } from "class-validator"
 
 import { AddressDto } from "./AddressDto"
@@ -23,7 +25,8 @@ export class RegisterUserDto {
   @ApiProperty({ description: "User surname", example: "Popescu" })
   @IsString()
   @IsNotEmpty()
-  readonly surname: string
+  @IsOptional()
+  readonly surname?: string
 
   @ApiProperty({ description: "User email", example: "test@sustainabyte.ro" })
   @IsEmail()
@@ -47,5 +50,10 @@ export class RegisterUserDto {
 
   @ApiProperty({ description: "User address" })
   @IsNotEmpty()
+  @IsObject()
   readonly address: AddressDto
+
+  @ApiProperty({ description: "Is Organization?", example: false })
+  @IsOptional()
+  readonly isOrganization?: boolean
 }

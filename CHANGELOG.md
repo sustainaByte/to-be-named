@@ -1,3 +1,11 @@
+v 2.0.0
+
+- add a way to difereniate between users and organizations
+- add a way to create organizations
+- add events functionality
+- improve older functions
+- add like post and events functionality
+
 v 1.3.0
 
 - add functionality to get all posts with the following endpoints: - "/posts" - GET - "/posts/{postId}" - GET
