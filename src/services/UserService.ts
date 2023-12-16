@@ -7,12 +7,11 @@ import * as bcrypt from "bcrypt"
 import * as jwt from "jsonwebtoken"
 
 import { REFRESH_TOKEN_EXP } from "src/constants"
-import { LoginUserDto, RegisterUserDto } from "src/dto"
+import { LoginUserDto, RegisterUserDto, UpdateUserDto } from "src/dto"
 import { User } from "src/db/schemas"
 import { formatErrorResponse } from "src/utils"
 import { JwtPayload, UserRole } from "src/@types"
 import { RoleRepository, UserRepository } from "src/repositories"
-import { SwitchRoleDto } from "../dto/SwitchRoleDto"
 
 @Injectable()
 export class UserService {
@@ -25,14 +24,24 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(registerUserDto.password, 10)
 
     try {
-      const standardRole = await this.roleRepository.find({
-        name: UserRole.STANDARD_USER,
-      })
+      let givenRole = null
+      if (registerUserDto.isOrganization) {
+        givenRole = await this.roleRepository.findOne({
+          name: UserRole.PREMIUM,
+        })
+      } else {
+        givenRole = await this.roleRepository.findOne({
+          name: UserRole.STANDARD_USER,
+        })
+      }
+
+      if (!registerUserDto.isOrganization && !registerUserDto.surname)
+        throw new BadRequestException("Surname is required for standard users")
 
       const createdUser = await this.userRepository.create({
         ...registerUserDto,
         password: hashedPassword,
-        roles: [standardRole[0]._id],
+        roles: [givenRole._id],
       })
 
       return createdUser
@@ -75,47 +84,35 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(formatErrorResponse(error))
     }
+  }
+  async getCurrentUser(userId: string): Promise<User> {
+    try {
+      const user = (await this.userRepository.findOne({
+        _id: this.userRepository.toObjectId(userId),
+      })) as User
+
+      return user
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
     }
+  }
 
+  async updateUser(
+    userId: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    try {
+      const updatedUser = (await this.userRepository.findOne({
+        _id: this.userRepository.toObjectId(userId),
+      })) as User
 
-    async switchToStandardUser(id: SwitchRoleDto): Promise<User> {
-        return this.switchUserRole(id, UserRole.STANDARD_USER);
+      await this.userRepository.update(
+        { _id: this.userRepository.toObjectId(userId) },
+        updateUserDto,
+      )
+      return updatedUser
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
     }
-
-    async switchToPremiumUser(id: SwitchRoleDto): Promise<User> {
-        return this.switchUserRole(id, UserRole.PREMIUM);
-    }
-
-    private async switchUserRole(id: SwitchRoleDto, targetRole: UserRole): Promise<User> {
-        try {
-            const user = await this.userRepository.findById(id.id);
-
-            if (!user) {
-                throw new BadRequestException("User not found" + id.id);
-            }
-
-
-            const targetRoleObject = await this.roleRepository.find({
-                name: targetRole,
-            });
-
-            if (!targetRoleObject) {
-                throw new BadRequestException("Target role not found");
-            }
-
-            const currentRole = user.roles ? user.roles.toString() : '';
-
-            const updatedRoles =
-                currentRole === targetRoleObject[0]._id.toString()
-                    ? user.roles
-                    : [targetRoleObject[0]._id];
-
-            user.roles = updatedRoles;
-            const updatedUser = await user.save();
-
-            return updatedUser;
-        } catch (error) {
-            throw new BadRequestException(formatErrorResponse(error));
-        }
-    }
+  }
 }

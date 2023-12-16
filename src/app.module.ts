@@ -43,6 +43,7 @@ export class AppModule implements NestModule {
         { path: "users*", method: RequestMethod.ALL },
         { path: "posts*", method: RequestMethod.ALL },
         { path: "password*", method: RequestMethod.ALL },
+        { path: "events*", method: RequestMethod.ALL },
       )
   }
 }

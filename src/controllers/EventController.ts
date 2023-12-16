@@ -21,25 +21,25 @@ import {
 import { formatSuccessResponse, CustomLogger } from "src/utils/index"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
-import { PostService } from "src/services"
 import { USER_ROLE_DEFINITIONS, UserRequest, UserRole } from "src/@types"
-import { CreatePostDto } from "src/dto"
+import { CreateEventDto } from "src/dto"
+import { EventService } from "src/services/EventService"
 
-@Controller("posts")
-@ApiTags("Posts")
+@Controller("events")
+@ApiTags("Events")
 @UseGuards(RolesGuard)
-export class PostController {
+export class EventController {
   constructor(
-    @Inject(PostService)
-    private readonly postService: PostService,
+    @Inject(EventService)
+    private readonly eventService: EventService,
     private readonly logger: CustomLogger,
   ) {}
 
-  @Post()
-  @ApiOperation({ summary: "Create a new post" })
+  @Post("")
+  @ApiOperation({ summary: "Create a new event" })
   @ApiResponse({
     status: 201,
-    description: "Post created successfully",
+    description: "Event created successfully",
     schema: {
       properties: {
         data: {
@@ -50,6 +50,19 @@ export class PostController {
             creatorId: { type: "string" },
             kudos: { type: "number" },
             mediaURL: { type: "array", items: { type: "string" } },
+            volunteers: { type: "array", items: { type: "string" } },
+            donors: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  userId: { type: "string" },
+                  amount: { type: "string" },
+                },
+              },
+            },
+            requiredMoney: { type: "number" },
+            collectedMoney: { type: "number" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
             _id: { type: "string" },
@@ -61,23 +74,23 @@ export class PostController {
   })
   @SetMetadata("roles", [
     {
-      name: UserRole.STANDARD_USER,
-      priority: USER_ROLE_DEFINITIONS.find(
-        (r) => r.name === UserRole.STANDARD_USER,
-      )?.priority,
+      name: UserRole.PREMIUM,
+      priority: USER_ROLE_DEFINITIONS.find((r) => r.name === UserRole.PREMIUM)
+        ?.priority,
     },
   ])
-  async createPost(
-    @Body() createPostDto: CreatePostDto,
+  async createEvent(
+    @Body() createEventDto: CreateEventDto,
     @Req() request: UserRequest,
   ) {
     try {
-      const response = await this.postService.createPost(
-        createPostDto,
+      console.log("1")
+      const response = await this.eventService.createEvent(
+        createEventDto,
         request.user,
       )
 
-      this.logger.log("Post created successfully")
+      this.logger.log("Event created successfully")
       return formatSuccessResponse(response)
     } catch (error) {
       this.logger.error(error)
@@ -86,27 +99,37 @@ export class PostController {
   }
 
   @Get()
-  @ApiOperation({ summary: "Get all posts" })
+  @ApiOperation({ summary: "Get all events" })
   @ApiResponse({
     status: 200,
-    description: "Posts retrieved successfully",
+    description: "Events retrieved successfully",
     schema: {
       properties: {
         data: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              content: { type: "string" },
-              creatorId: { type: "string" },
-              kudos: { type: "number" },
-              mediaURL: { type: "array", items: { type: "string" } },
-              createdAt: { type: "string", format: "date-time" },
-              updatedAt: { type: "string", format: "date-time" },
-              _id: { type: "string" },
-              __v: { type: "number" },
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            content: { type: "string" },
+            creatorId: { type: "string" },
+            kudos: { type: "number" },
+            mediaURL: { type: "array", items: { type: "string" } },
+            volunteers: { type: "array", items: { type: "string" } },
+            donors: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  userId: { type: "string" },
+                  amount: { type: "string" },
+                },
+              },
             },
+            requiredMoney: { type: "number" },
+            collectedMoney: { type: "number" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            _id: { type: "string" },
+            __v: { type: "number" },
           },
         },
       },
@@ -124,7 +147,7 @@ export class PostController {
   @HttpCode(200)
   async getAllPosts() {
     try {
-      const response = await this.postService.getAllPosts()
+      const response = await this.eventService.getAllEvents()
       return formatSuccessResponse(response)
     } catch (error) {
       this.logger.error(error)
@@ -132,11 +155,11 @@ export class PostController {
     }
   }
 
-  @Get(":postId")
-  @ApiOperation({ summary: "Get all posts" })
+  @Get(":eventId")
+  @ApiOperation({ summary: "Get event by id" })
   @ApiResponse({
     status: 200,
-    description: "Posts retrieved successfully",
+    description: "Event retrieved successfully",
     schema: {
       properties: {
         data: {
@@ -166,9 +189,9 @@ export class PostController {
     schema: ERROR_BODY,
   })
   @HttpCode(200)
-  async getPost(@Param("postId") postId: string) {
+  async getPost(@Param("eventId") eventId: string) {
     try {
-      const response = await this.postService.getPost(postId)
+      const response = await this.eventService.getEvent(eventId)
       return formatSuccessResponse(response)
     } catch (error) {
       this.logger.error(error)
@@ -176,11 +199,11 @@ export class PostController {
     }
   }
 
-  @Post(":postId/like")
-  @ApiOperation({ summary: "Like or unlike a post" })
+  @Post(":eventId/like")
+  @ApiOperation({ summary: "Like or unlike an event" })
   @ApiResponse({
     status: 200,
-    description: "Post liked or unliked successfully",
+    description: "Event liked or unliked successfully",
     schema: {
       properties: {
         data: {
@@ -191,6 +214,19 @@ export class PostController {
             creatorId: { type: "string" },
             kudos: { type: "number" },
             mediaURL: { type: "array", items: { type: "string" } },
+            volunteers: { type: "array", items: { type: "string" } },
+            donors: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  userId: { type: "string" },
+                  amount: { type: "string" },
+                },
+              },
+            },
+            requiredMoney: { type: "number" },
+            collectedMoney: { type: "number" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
             _id: { type: "string" },
@@ -218,12 +254,12 @@ export class PostController {
     },
   ])
   async togglePostLike(
-    @Param("postId") postId: string,
+    @Param("eventId") eventId: string,
     @Req() request: UserRequest,
   ) {
     try {
-      const response = await this.postService.togglePostLike(
-        postId,
+      const response = await this.eventService.toggleEventLike(
+        eventId,
         request.user.userId,
       )
 

@@ -1,11 +1,15 @@
 import {
   Controller,
-    Post,
-    Patch,
+  Post,
   Body,
   HttpCode,
   UseGuards,
   Inject,
+  Get,
+  Req,
+  Param,
+  Patch,
+  SetMetadata,
 } from "@nestjs/common"
 import {
   ApiBadRequestResponse,
@@ -20,13 +24,13 @@ import {
   formatSuccessResponseDto,
   formatSuccessResponse,
   CustomLogger,
+  checkEqualFields,
 } from "src/utils/index"
-import { LoginUserDto, RegisterUserDto } from "src/dto"
+import { LoginUserDto, RegisterUserDto, UpdateUserDto } from "src/dto"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
-import { UserService } from "src/services"
-import { SwitchRoleDto } from "../dto/SwitchRoleDto"
-
+import { EventService, PostService, UserService } from "src/services"
+import { USER_ROLE_DEFINITIONS, UserRequest, UserRole } from "src/@types"
 
 @Controller("users")
 @ApiTags("Users")
@@ -36,6 +40,8 @@ export class UserController {
     @Inject(UserService)
     private readonly userService: UserService,
     private readonly logger: CustomLogger,
+    private readonly postService: PostService,
+    private readonly eventService: EventService,
   ) {}
 
   @Post("/register")
@@ -77,6 +83,8 @@ export class UserController {
         "surname",
         "email",
         "phoneNumber",
+        "address",
+        "isOrganization",
       )
     } catch (error) {
       this.logger.error(error)
@@ -120,81 +128,253 @@ export class UserController {
     } catch (error) {
       throw error
     }
-    }
+  }
 
-
-    @Patch("/switch_standard")
-    @ApiOperation({ summary: "Switch user to standard role" })
-    @ApiResponse({
-        status: 200,
-        description: "User switched to standard role successfully",
-        schema: {
-            properties: {
-                data: {
-                    type: "object",
-                    properties: {
-                        name: { type: "string" },
-                        surname: { type: "string" },
-                        email: { type: "string" },
-                        phoneNumber: { type: "string" },
-                        roles: { type: "array", items: { type: "string" } },
-                    },
-                },
+  @Patch(":userId")
+  @ApiOperation({ summary: "Update user" })
+  @ApiResponse({
+    status: 200,
+    description: "User updated successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            surname: { type: "string" },
+            email: { type: "string" },
+            phoneNumber: { type: "string" },
+            roles: { type: "array", items: { type: "string" } },
+            address: {
+              type: "object",
+              properties: {
+                country: { type: "string" },
+                city: { type: "string" },
+                street: { type: "string" },
+                number: { type: "string" },
+                postalCode: { type: "string" },
+              },
             },
+          },
         },
-    })
-    @ApiBadRequestResponse({
-        description: "Invalid request.",
-        schema: ERROR_BODY,
-    })
-    @ApiUnauthorizedResponse({
-        description: "Unauthorized access.",
-        schema: ERROR_BODY,
-    })
-    async switchToStandardUser(@Body() id: SwitchRoleDto) {
-        try {
-            const updatedUser = await this.userService.switchToStandardUser(id);
-            return formatSuccessResponse(updatedUser);
-        } catch (error) {
-            this.logger.error(error);
-            throw error;
-        }
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @HttpCode(200)
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+  async updateUser(
+    @Param("userId") userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: UserRequest,
+  ) {
+    try {
+      checkEqualFields(userId.toString(), req.user.userId.toString())
+      const response = await this.userService.updateUser(userId, updateUserDto)
+      return formatSuccessResponse(response)
+    } catch (error) {
+      throw error
     }
+  }
 
-    @Patch("/switch_premium")
-    @ApiOperation({ summary: "Switch user to premium role" })
-    @ApiResponse({
-        status: 200,
-        description: "User switched to premium role successfully",
-        schema: {
-            properties: {
-                data: {
-                    type: "object",
-                    properties: {
-                        name: { type: "string" },
-                        surname: { type: "string" },
-                        email: { type: "string" },
-                        phoneNumber: { type: "string" }
-                    },
-                },
+  @Get("/current")
+  @ApiOperation({ summary: "Get current user" })
+  @ApiResponse({
+    status: 200,
+    description: "User retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            surname: { type: "string" },
+            email: { type: "string" },
+            phoneNumber: { type: "string" },
+            roles: { type: "array", items: { type: "string" } },
+            address: {
+              type: "object",
+              properties: {
+                country: { type: "string" },
+                city: { type: "string" },
+                street: { type: "string" },
+                number: { type: "string" },
+                postalCode: { type: "string" },
+              },
             },
+          },
         },
-    })
-    @ApiBadRequestResponse({
-        description: "Invalid request.",
-        schema: ERROR_BODY,
-    })
-    @ApiUnauthorizedResponse({
-        description: "Unauthorized access.",
-        schema: ERROR_BODY,
-    })
-    async switchToPremiumUser(@Body() id: SwitchRoleDto) {
-        try {
-            const updatedUser = await this.userService.switchToPremiumUser(id);
-            return formatSuccessResponse(updatedUser);
-        } catch (error) {
-            this.logger.error(error);
-            throw error;
-        }
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @HttpCode(200)
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+  async getCurrentUser(@Req() req: UserRequest) {
+    try {
+      const userId = req.user.userId
+      const response = await this.userService.getCurrentUser(userId)
+      return formatSuccessResponse(response)
+    } catch (error) {
+      throw error
     }
+  }
+
+  @Get(":userId/posts")
+  @ApiOperation({ summary: "Get all posts made by a user" })
+  @ApiResponse({
+    status: 200,
+    description: "Posts retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+              creatorId: { type: "string" },
+              kudos: { type: "number" },
+              mediaURL: { type: "array", items: { type: "string" } },
+              createdAt: { type: "string", format: "date-time" },
+              updatedAt: { type: "string", format: "date-time" },
+              _id: { type: "string" },
+              __v: { type: "number" },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @HttpCode(200)
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+  async getAllPostsByUser(
+    @Param("userId") userId: string,
+    @Req() req: UserRequest,
+  ) {
+    try {
+      checkEqualFields(userId.toString(), req.user.userId.toString())
+      const response = await this.postService.getPersonalPosts(userId)
+      return formatSuccessResponse(response)
+    } catch (error) {
+      this.logger.error(error)
+      throw error
+    }
+  }
+
+  @Get(":userId/events")
+  @ApiOperation({ summary: "Get all events made by a user" })
+  @ApiResponse({
+    status: 200,
+    description: "Events retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            content: { type: "string" },
+            creatorId: { type: "string" },
+            kudos: { type: "number" },
+            mediaURL: { type: "array", items: { type: "string" } },
+            volunteers: { type: "array", items: { type: "string" } },
+            donors: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  userId: { type: "string" },
+                  amount: { type: "string" },
+                },
+              },
+            },
+            requiredMoney: { type: "number" },
+            collectedMoney: { type: "number" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            _id: { type: "string" },
+            __v: { type: "number" },
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+  @HttpCode(200)
+  async getAllEventsByUser(
+    @Param("userId") userId: string,
+    @Req() req: UserRequest,
+  ) {
+    try {
+      checkEqualFields(userId.toString(), req.user.userId.toString())
+      const response = await this.eventService.getPersonalEvents(userId)
+      return formatSuccessResponse(response)
+    } catch (error) {
+      this.logger.error(error)
+      throw error
+    }
+  }
 }

@@ -11,8 +11,8 @@ export class Post extends Document implements PostType {
   @Prop({ required: true })
   content: string
 
-  @Prop({ default: 0 })
-  kudos: number
+  @Prop({ default: [] })
+  kudos: string[]
 
   //TODO: Encode/Decode
   @Prop([Buffer])
