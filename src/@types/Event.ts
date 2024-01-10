@@ -4,7 +4,7 @@ export interface Event {
   title: string
   content: string
   kudos: string[]
-  mediaUrl: Buffer[]
+  mediaUrl: string[]
   creatorId: Types.ObjectId
   requiredMoney: number
   collectedMoney: number

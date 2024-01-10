@@ -4,6 +4,7 @@ import { PasswordService } from "./PasswordService"
 import { GoogleService } from "./GoogleService"
 import { PostService } from "./PostService"
 import { EventService } from "./EventService"
+import { UploadService } from "./UploadService"
 
 export const services = [
   EmailService,
@@ -11,7 +12,8 @@ export const services = [
   PasswordService,
   GoogleService,
   PostService,
-  EventService,
+    EventService,
+    UploadService
 ]
 
 export {
@@ -20,5 +22,6 @@ export {
   PasswordService,
   GoogleService,
   PostService,
-  EventService,
+    EventService,
+  UploadService
 }

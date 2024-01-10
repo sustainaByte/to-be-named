@@ -14,9 +14,8 @@ export class Post extends Document implements PostType {
   @Prop({ default: [] })
   kudos: string[]
 
-  //TODO: Encode/Decode
-  @Prop([Buffer])
-  mediaUrl: Buffer[]
+  @Prop([String])
+  mediaUrl: string[]
 
   @Prop({ required: true })
   creatorId: Types.ObjectId
