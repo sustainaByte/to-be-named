@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsOptional, IsString } from "class-validator"
+import { FileUploadDto } from '../dto/FileUploadDto'
 
 export class CreatePostDto {
   @ApiProperty({ description: "Title" })
@@ -10,8 +11,7 @@ export class CreatePostDto {
   @IsString()
   readonly content: string
 
-  @ApiProperty({ description: "Media URL", required: false })
-  @IsString({ each: true })
-  @IsOptional()
-  readonly mediaUrl?: string[]
+    @ApiProperty({ description: "Media file", })
+    @IsOptional()
+    mediaUrl?: string[];
 }

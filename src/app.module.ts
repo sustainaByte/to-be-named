@@ -18,8 +18,8 @@ import { schemas } from "./db/schemas"
 import { repositories } from "./repositories"
 
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
+    imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forFeature(schemas),
     DatabaseConnection,
   ],

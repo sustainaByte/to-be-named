@@ -1,9 +1,11 @@
+import { Optional } from "@nestjs/common"
 import { Types } from "mongoose"
 
 export interface Post {
   content: string
   title: string
   kudos: string[]
-  mediaUrl: Buffer[]
-  creatorId: Types.ObjectId
+  mediaUrl: string[]
+    creatorId: Types.ObjectId
+  mediaFile?: Express.Multer.File
 }

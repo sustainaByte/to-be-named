@@ -109,13 +109,14 @@ export abstract class BaseRepository<T extends Document>
     }
   }
 
-  async delete(id: string): Promise<T | null> {
+    async delete(id: string): Promise<T | null> {
     try {
-      return await this.model.findByIdAndDelete(id).exec()
+      //return await this.model.findByIdAndDelete(id).exec()
+        return null;
     } catch (error) {
       throw new BadRequestException(formatErrorResponse(error))
     }
-  }
+    }
 
   async findAdvanced(filter: PipelineStage[]): Promise<T | T[]> {
     try {
