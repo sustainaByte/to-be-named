@@ -37,17 +37,24 @@ export class StatisticsService {
                 }
             })
             statistics.Locations = locationMap;
+            const id = new Types.ObjectId("aabbccddeeff").toString()
             const stat = (await this.statisticsRepo.findById(
-                new Types.ObjectId("aabbccddeeff").toString()
+                id
             ))
+            if (!stat) {
+                await this.statisticsRepo.create({
+                    _id: id,
+                    ...statistics
+                });
+            }
             await this.statisticsRepo.update({
                  _id: this.statisticsRepo.toObjectId("aabbccddeeff") },
                 statistics
             );
-            console.log(new Types.ObjectId("aabbccddeeff"));
             return stat;
         }
         catch (error) {
+            console.error(error);
             throw new BadRequestException(formatErrorResponse(error))
         }
     }

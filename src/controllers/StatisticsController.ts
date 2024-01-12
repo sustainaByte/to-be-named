@@ -62,12 +62,9 @@ export class StatisticsController {
         },
     })
 
-    async createStatistics(
-        
-    ) {
+    async createStatistics() {
         try {
             const response = await this.statisticsService.createStatistics();
-            console.log(response);
             return Array.from(response.Locations.entries());
         } catch (error) {
             throw error
@@ -95,9 +92,7 @@ export class StatisticsController {
     async getPost() {
         
         try {
-            const response = await this.statisticsService.getStatistics()
-            
-            console.log(response)
+            const response = await this.statisticsService.getStatistics()       
             return formatSuccessResponse(response)
         } catch (error) {
             throw error
