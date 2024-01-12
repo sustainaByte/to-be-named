@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { BadRequestException, Injectable } from "@nestjs/common"
 import { JwtPayload } from "src/@types"
 import { Post } from "src/db/schemas"
@@ -14,7 +15,7 @@ export class PostService {
         private readonly postRepository: PostRepository,
         private readonly uploadService: UploadService
     ) { }
-    async createPost(createPostDto: CreatePostDto, file: Express.Multer.File, userRequest: JwtPayload) {
+    async createPost(createPostDto: CreatePostDto, userRequest: JwtPayload, file?: Express.Multer.File) {
         try {
             let imageUrl: string;
             createPostDto.mediaUrl = createPostDto.mediaUrl || [];
