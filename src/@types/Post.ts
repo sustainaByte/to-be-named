@@ -10,4 +10,5 @@ export interface Post {
     creatorId: Types.ObjectId
     mediaFile?: Express.Multer.File
     location?: string
+    comments?: [string, string][]
 }

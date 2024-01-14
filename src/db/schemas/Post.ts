@@ -10,10 +10,13 @@ export class Post extends Document implements PostType {
   title: string
 
   @Prop({ required: true })
-    content: string
+  content: string
 
-    @Prop({ required: false })
-    location: string
+  @Prop({ required: false })
+  location: string
+
+  @Prop({ required: false })
+  comments?: [string, string][]
 
   @Prop({ default: [] })
   kudos: string[]

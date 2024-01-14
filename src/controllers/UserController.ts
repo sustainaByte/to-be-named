@@ -248,6 +248,63 @@ export class UserController {
     } catch (error) {
       throw error
     }
+    }
+
+  @Get(":userId")
+  @ApiOperation({ summary: "Get user by id" })
+  @ApiResponse({
+    status: 200,
+    description: "User retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            surname: { type: "string" },
+            email: { type: "string" },
+            phoneNumber: { type: "string" },
+            roles: { type: "array", items: { type: "string" } },
+            address: {
+              type: "object",
+              properties: {
+                country: { type: "string" },
+                city: { type: "string" },
+                street: { type: "string" },
+                number: { type: "string" },
+                postalCode: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "Invalid request. Please ensure your input is valid and properly formatted.",
+    schema: ERROR_BODY,
+  })
+  @ApiUnauthorizedResponse({
+    description: "Unauthorized",
+    schema: ERROR_BODY,
+  })
+  @HttpCode(200)
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+    async getUserById(@Param("userId") userId: string) {
+    try {
+      const response = await this.userService.getCurrentUser(userId)
+      return formatSuccessResponse(response)
+    } catch (error) {
+      throw error
+    }
   }
 
   @Get(":userId/posts")

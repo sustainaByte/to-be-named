@@ -57,12 +57,6 @@ export class PostService {
         }
     }
 
-    private extractFileName(url: any): string {
-        let strUrl = String(url);
-        let parts = strUrl.split("/");
-        return parts[parts.length - 1];
-    }
-
     async getPersonalPosts(userId: string): Promise<Array<Post>> {
         try {
             const posts = (await this.postRepository.find({
@@ -100,6 +94,28 @@ export class PostService {
                     { kudos: post.kudos },
                 )
             }
+            return post
+        } catch (error) {
+            throw new BadRequestException(formatErrorResponse(error))
+        }
+    }
+
+    async addComment(postId: string, userId: string, comment: string): Promise<Post> {
+        try {
+            const post = (await this.postRepository.findOne({
+                _id: this.postRepository.toObjectId(postId),
+            })) as Post
+
+            if (!post) throw new BadRequestException("Post not found")
+
+            const newComments = post.comments;
+
+            newComments.push([userId, comment]);
+
+            await this.postRepository.update(
+                { _id: this.postRepository.toObjectId(postId) },
+                { comments: newComments },
+            )
             return post
         } catch (error) {
             throw new BadRequestException(formatErrorResponse(error))

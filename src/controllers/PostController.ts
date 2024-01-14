@@ -15,6 +15,7 @@ import {
     ParseFilePipe,
     MaxFileSizeValidator,
     Res,
+    BadRequestException,
 } from "@nestjs/common"
 import {
     ApiBadRequestResponse,
@@ -59,6 +60,7 @@ export class PostController {
                         title: { type: "string" },
                         content: { type: "string" },
                         location: { type: "string" },
+                        comments: { type: "array" },
                         creatorId: { type: "string" },
                         kudos: { type: "number" },
                         mediaURL: { type: "array", items: { type: "string" } },
@@ -122,6 +124,7 @@ export class PostController {
                             title: { type: "string" },
                             content: { type: "string" },
                             location: { type: "string" },
+                            comments: { type: "array" },
                             creatorId: { type: "string" },
                             kudos: { type: "number" },
                             mediaURL: { type: "array", items: { type: "string" } },
@@ -156,10 +159,10 @@ export class PostController {
     }
 
     @Get(":postId")
-    @ApiOperation({ summary: "Get all posts" })
+    @ApiOperation({ summary: "Get post by id"})
     @ApiResponse({
         status: 200,
-        description: "Posts retrieved successfully",
+        description: "Post retrieved successfully",
         schema: {
             properties: {
                 data: {
@@ -167,9 +170,59 @@ export class PostController {
                     properties: {
                         title: { type: "string" },
                         content: { type: "string" },
+                        location: { type: "string" },
+                        comments: { type: "array" },
                         creatorId: { type: "string" },
                         kudos: { type: "number" },
-                        mediaURL: { type: "array", items: { type: "buffer" } },
+                        mediaURL: { type: "array", items: { type: "string" } },
+                        createdAt: { type: "string", format: "date-time" },
+                        updatedAt: { type: "string", format: "date-time" },
+                        _id: { type: "string" },
+                        __v: { type: "number" },
+                    },
+                },
+            },
+        },
+    })
+    @ApiBadRequestResponse({
+        description:
+            "Invalid request. Please ensure your input is valid and properly formatted.",
+        schema: ERROR_BODY,
+    })
+    @ApiUnauthorizedResponse({
+        description: "Unauthorized",
+        schema: ERROR_BODY,
+    })
+    @HttpCode(200)
+    async getPostPhoto(
+        @Param("postId") postId: string
+        ) {
+        try {
+            const response = await this.postService.getPost(postId)
+            return formatSuccessResponse(response)
+        } catch (error) {
+            this.logger.error(error)
+            throw error
+        }
+    }
+
+    @Get(":postId/photo")
+    @ApiOperation({ summary: "Get post photo"})
+    @ApiResponse({
+        status: 200,
+        description: "Post photo retrieved successfully",
+        schema: {
+            properties: {
+                data: {
+                    type: "object",
+                    properties: {
+                        title: { type: "string" },
+                        content: { type: "string" },
+                        location: { type: "string" },
+                        comments: { type: "array" },
+                        creatorId: { type: "string" },
+                        kudos: { type: "number" },
+                        mediaURL: { type: "array", items: { type: "string" } },
                         createdAt: { type: "string", format: "date-time" },
                         updatedAt: { type: "string", format: "date-time" },
                         _id: { type: "string" },
@@ -195,11 +248,14 @@ export class PostController {
         ) {
         try {
             const response = await this.postService.getPost(postId)
-            const fileStream = await this.uploadService.getFile(this.extractFileName(response.mediaUrl));
 
-            fileStream.pipe(res);
-
-            return formatSuccessResponse(response)
+            if (response.mediaUrl.length > 0) {
+                const fileStream = await this.uploadService.getFile(this.extractFileName(response.mediaUrl));
+                fileStream.pipe(res);
+            }
+            else {
+                throw new BadRequestException("No photo for this post");
+            }
         } catch (error) {
             this.logger.error(error)
             throw error
@@ -224,6 +280,8 @@ export class PostController {
                     properties: {
                         title: { type: "string" },
                         content: { type: "string" },
+                        location: { type: "string" },
+                        comments: { type: "array" },
                         creatorId: { type: "string" },
                         kudos: { type: "number" },
                         mediaURL: { type: "array", items: { type: "string" } },
@@ -261,6 +319,68 @@ export class PostController {
             const response = await this.postService.togglePostLike(
                 postId,
                 request.user.userId,
+            )
+
+            return formatSuccessResponse(response)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    @Post(":postId/comment")
+    @ApiOperation({ summary: "Add a comment to a post" })
+    @ApiResponse({
+        status: 200,
+        description: "Comment posted succe",
+        schema: {
+            properties: {
+                data: {
+                    type: "object",
+                    properties: {
+                        title: { type: "string" },
+                        content: { type: "string" },
+                        location: { type: "string" },
+                        comments: { type: "array" },
+                        creatorId: { type: "string" },
+                        kudos: { type: "number" },
+                        mediaURL: { type: "array", items: { type: "string" } },
+                        createdAt: { type: "string", format: "date-time" },
+                        updatedAt: { type: "string", format: "date-time" },
+                        _id: { type: "string" },
+                        __v: { type: "number" },
+                    },
+                },
+            },
+        },
+    })
+    @ApiBadRequestResponse({
+        description:
+            "Invalid request. Please ensure your input is valid and properly formatted.",
+        schema: ERROR_BODY,
+    })
+    @ApiUnauthorizedResponse({
+        description: "Unauthorized",
+        schema: ERROR_BODY,
+    })
+    @SetMetadata("roles", [
+        {
+            name: UserRole.STANDARD_USER,
+            priority: USER_ROLE_DEFINITIONS.find(
+                (r) => r.name === UserRole.STANDARD_USER,
+            )?.priority,
+        },
+    ])
+    async addCommentToPost(
+        @Param("postId") postId: string,
+        @Body() comment: string,
+        @Req() request: UserRequest,
+    ) {
+        try {
+            console.log(comment)
+            const response = await this.postService.addComment(
+                postId,
+                request.user.userId,
+                comment
             )
 
             return formatSuccessResponse(response)
