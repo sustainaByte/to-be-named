@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Document, Types } from "mongoose"
 
@@ -9,12 +10,15 @@ export class Event extends Document implements EventType {
   title: string
 
   @Prop({ required: true })
-  content: string
+    content: string
+
+    @Prop({ required: false })
+    location: string
 
   @Prop({ default: [] })
   kudos: string[]
 
-   @Prop([String])
+    @Prop({ required: false })
    mediaUrl: string[]
 
   @Prop({ required: true })

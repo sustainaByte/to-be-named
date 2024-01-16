@@ -5,6 +5,7 @@ import { GoogleService } from "./GoogleService"
 import { PostService } from "./PostService"
 import { EventService } from "./EventService"
 import { UploadService } from "./UploadService"
+import { StatisticsService } from "./StatisticsService"
 
 export const services = [
   EmailService,
@@ -13,7 +14,8 @@ export const services = [
   GoogleService,
   PostService,
     EventService,
-    UploadService
+    UploadService,
+    StatisticsService
 ]
 
 export {
@@ -23,5 +25,6 @@ export {
   GoogleService,
   PostService,
     EventService,
-  UploadService
+    UploadService,
+    StatisticsService
 }

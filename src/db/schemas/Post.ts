@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Document, Types } from "mongoose"
 
@@ -11,10 +12,16 @@ export class Post extends Document implements PostType {
   @Prop({ required: true })
   content: string
 
+  @Prop({ required: false })
+  location: string
+
+  @Prop({ required: false })
+  comments?: [string, string][]
+
   @Prop({ default: [] })
   kudos: string[]
 
-  @Prop([String])
+  @Prop({ required: false })
   mediaUrl: string[]
 
   @Prop({ required: true })

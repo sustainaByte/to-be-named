@@ -4,6 +4,7 @@ import { GoogleController } from "./GoogleController"
 import { PostController } from "./PostController"
 import { EventController } from "./EventController"
 import { UploadController } from "./UploadController"
+import { StatisticsController } from "./StatisticsController"
 
 export const controllers = [
   UserController,
@@ -11,7 +12,8 @@ export const controllers = [
   GoogleController,
   PostController,
     EventController,
-    UploadController
+    UploadController,
+    StatisticsController
 ]
 
 export {
@@ -20,5 +22,6 @@ export {
   GoogleController,
   PostController,
     EventController,
-    UploadController
+    UploadController,
+    StatisticsController
 }

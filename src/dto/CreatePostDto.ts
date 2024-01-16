@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { ApiProperty } from "@nestjs/swagger"
 import { IsOptional, IsString } from "class-validator"
 import { FileUploadDto } from '../dto/FileUploadDto'
@@ -10,6 +11,11 @@ export class CreatePostDto {
   @ApiProperty({ description: "Content" })
   @IsString()
   readonly content: string
+
+    @ApiProperty({ description: "Location" })
+    @IsString()
+    @IsOptional()
+    readonly location: string
 
     @ApiProperty({ description: "Media file", })
     @IsOptional()
