@@ -91,6 +91,12 @@ export class UserService {
         _id: this.userRepository.toObjectId(userId),
       })) as User
 
+      const role = await this.roleRepository.findOne({
+        _id: user.roles[0],
+      })
+
+      user.roles = [role] as any
+
       return user
     } catch (error) {
       throw new BadRequestException(formatErrorResponse(error))
