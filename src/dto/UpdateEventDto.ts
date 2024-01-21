@@ -1,14 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNumber, IsObject, IsOptional, IsString } from "class-validator"
 
-export class CreateEventDto {
+export class UpdateEventDto {
   @ApiProperty({ description: "Title" })
   @IsOptional()
-  readonly title: string
+  readonly title?: string
 
   @ApiProperty({ description: "Content" })
   @IsOptional()
-  readonly content: string
+  readonly content?: string
 
   @ApiProperty({ description: "Media URL", required: false })
   @IsString({ each: true })

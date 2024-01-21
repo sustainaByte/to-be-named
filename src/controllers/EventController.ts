@@ -9,6 +9,7 @@ import {
   SetMetadata,
   Req,
   Param,
+  Patch,
 } from "@nestjs/common"
 import {
   ApiBadRequestResponse,
@@ -22,7 +23,7 @@ import { formatSuccessResponse, CustomLogger } from "src/utils/index"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
 import { USER_ROLE_DEFINITIONS, UserRequest, UserRole } from "src/@types"
-import { CreateEventDto } from "src/dto"
+import { CreateEventDto, UpdateEventDto } from "src/dto"
 import { EventService } from "src/services/EventService"
 
 @Controller("events")
@@ -84,7 +85,6 @@ export class EventController {
     @Req() request: UserRequest,
   ) {
     try {
-      console.log("1")
       const response = await this.eventService.createEvent(
         createEventDto,
         request.user,
@@ -261,6 +261,69 @@ export class EventController {
       const response = await this.eventService.toggleEventLike(
         eventId,
         request.user.userId,
+      )
+
+      return formatSuccessResponse(response)
+    } catch (error) {
+      throw error
+    }
+  }
+
+  @Patch(":eventId")
+  @ApiOperation({ summary: "Update an event" })
+  @ApiResponse({
+    status: 200,
+    description: "Event updated successfully",
+    schema:
+      // eslint-disable-next-line prettier/prettier
+      {
+        properties: {
+          data: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              content: { type: "string" },
+              creatorId: { type: "string" },
+              kudos: { type: "number" },
+              mediaURL: { type: "array", items: { type: "string" } },
+              volunteers: { type: "array", items: { type: "string" } },
+              donors: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    userId: { type: "string" },
+                    amount: { type: "string" },
+                  },
+                },
+              },
+              requiredMoney: { type: "number" },
+              collectedMoney: { type: "number" },
+              createdAt: { type: "string", format: "date-time" },
+              updatedAt: { type: "string", format: "date-time" },
+              _id: { type: "string" },
+              __v: { type: "number" },
+            },
+          },
+        },
+      },
+  })
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+  async updateEvent(
+    @Param("eventId") eventId: string,
+    @Body() updateEventDto: UpdateEventDto,
+  ) {
+    try {
+      const response = await this.eventService.updateEvent(
+        eventId,
+        updateEventDto,
       )
 
       return formatSuccessResponse(response)

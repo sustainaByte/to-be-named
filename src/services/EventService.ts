@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common"
 import { JwtPayload } from "src/@types"
 import { Post } from "src/db/schemas"
 
-import { CreateEventDto } from "src/dto"
+import { CreateEventDto, UpdateEventDto } from "src/dto"
 import { EventRepository } from "src/repositories"
 import { formatErrorResponse } from "src/utils"
 
@@ -83,6 +83,22 @@ export class EventService {
         )
       }
       return post
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
+    }
+  }
+
+  async updateEvent(eventId: string, updateEventDto: UpdateEventDto) {
+    try {
+      const updatedEvent = (await this.eventRepository.findOne({
+        _id: this.eventRepository.toObjectId(eventId),
+      })) as Post
+
+      await this.eventRepository.update(
+        { _id: this.eventRepository.toObjectId(eventId) },
+        updateEventDto,
+      )
+      return updatedEvent
     } catch (error) {
       throw new BadRequestException(formatErrorResponse(error))
     }
