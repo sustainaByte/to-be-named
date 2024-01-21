@@ -26,7 +26,12 @@ import {
   CustomLogger,
   checkEqualFields,
 } from "src/utils/index"
-import { LoginUserDto, RegisterUserDto, UpdateUserDto } from "src/dto"
+import {
+  LoginUserDto,
+  RegisterUserDto,
+  UpdateUserDto,
+  UpgradeUserDto,
+} from "src/dto"
 import { RolesGuard } from "src/guards/RolesGuard"
 import { ERROR_BODY } from "src/constants"
 import { EventService, PostService, UserService } from "src/services"
@@ -248,7 +253,7 @@ export class UserController {
     } catch (error) {
       throw error
     }
-    }
+  }
 
   @Get(":userId")
   @ApiOperation({ summary: "Get user by id" })
@@ -298,7 +303,7 @@ export class UserController {
       )?.priority,
     },
   ])
-    async getUserById(@Param("userId") userId: string) {
+  async getUserById(@Param("userId") userId: string) {
     try {
       const response = await this.userService.getCurrentUser(userId)
       return formatSuccessResponse(response)
@@ -428,6 +433,62 @@ export class UserController {
     try {
       checkEqualFields(userId.toString(), req.user.userId.toString())
       const response = await this.eventService.getPersonalEvents(userId)
+      return formatSuccessResponse(response)
+    } catch (error) {
+      this.logger.error(error)
+      throw error
+    }
+  }
+
+  @ApiOperation({ summary: "Upgrade user role" })
+  @ApiResponse({
+    status: 200,
+    description: "User retrieved successfully",
+    schema: {
+      properties: {
+        data: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            surname: { type: "string" },
+            email: { type: "string" },
+            phoneNumber: { type: "string" },
+            roles: { type: "array", items: { type: "string" } },
+            address: {
+              type: "object",
+              properties: {
+                country: { type: "string" },
+                city: { type: "string" },
+                street: { type: "string" },
+                number: { type: "string" },
+                postalCode: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @SetMetadata("roles", [
+    {
+      name: UserRole.STANDARD_USER,
+      priority: USER_ROLE_DEFINITIONS.find(
+        (r) => r.name === UserRole.STANDARD_USER,
+      )?.priority,
+    },
+  ])
+  @Patch(":userId/upgrade")
+  async upgradeUser(
+    @Body() upgradeUserDto: UpgradeUserDto,
+    @Param("userId") userId: string,
+    @Req() req: UserRequest,
+  ) {
+    try {
+      checkEqualFields(userId.toString(), req.user.userId.toString())
+      const response = await this.userService.upgradeUser(
+        userId,
+        upgradeUserDto.role,
+      )
       return formatSuccessResponse(response)
     } catch (error) {
       this.logger.error(error)

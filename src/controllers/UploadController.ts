@@ -1,60 +1,59 @@
 import {
-    Controller,
-    MaxFileSizeValidator,
-    ParseFilePipe,
-    Post,
-    Get,
-    Param,
-    UploadedFile,
-    UseInterceptors,
-    Body,
-    Res
+  Controller,
+  MaxFileSizeValidator,
+  ParseFilePipe,
+  Post,
+  Get,
+  Param,
+  UploadedFile,
+  UseInterceptors,
+  Res,
+} from "@nestjs/common"
+import { FileInterceptor } from "@nestjs/platform-express"
+import { UploadService } from "../services/UploadService"
 
-} from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
-import { UploadService } from '../services/UploadService';
-
-@Controller('upload')
+@Controller("upload")
 export class UploadController {
-    constructor(private readonly uploadService: UploadService) { }
+  constructor(private readonly uploadService: UploadService) {}
 
-    @Post()
-    @UseInterceptors(FileInterceptor('file'))
-    async uploadFile(
-        @UploadedFile(
-            new ParseFilePipe({
-                validators: [new MaxFileSizeValidator({ maxSize: 3e7 })],
-            }),
-        )
-        file: Express.Multer.File,
-    ) {
-        try {
-            const imageUrl = await this.uploadService.upload(file.originalname, file.buffer);
+  @Post()
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new MaxFileSizeValidator({ maxSize: 3e7 })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    try {
+      const imageUrl = await this.uploadService.upload(
+        file.originalname,
+        file.buffer,
+      )
 
-            return { imageUrl };
-        } catch (error) {
-            console.error('Error uploading file:', error);
-        }
+      return { imageUrl }
+    } catch (error) {
+      console.error("Error uploading file:", error)
     }
+  }
 
-    @Get()
-    async getFile(
-        @Param(":url") url: string,
-        @Res() res: Response,
-        ) {
-        try {
-            const fileStream = await this.uploadService.getFile(this.extractFileName(url));
+  @Get()
+  async getFile(@Param(":url") url: string, @Res() res: Response) {
+    try {
+      const fileStream = await this.uploadService.getFile(
+        this.extractFileName(url),
+      )
 
-            fileStream.pipe(res);
-        } catch (error) {
-            console.error('Error getting file:', error);
-        }
+      fileStream.pipe(res)
+    } catch (error) {
+      console.error("Error getting file:", error)
     }
+  }
 
-
-    private extractFileName(url: any): string {
-        let strUrl = String(url);
-        let parts = strUrl.split("/");
-        return parts[parts.length - 1];
-    }
+  private extractFileName(url: any): string {
+    const strUrl = String(url)
+    const parts = strUrl.split("/")
+    return parts[parts.length - 1]
+  }
 }

@@ -121,4 +121,29 @@ export class UserService {
       throw new BadRequestException(formatErrorResponse(error))
     }
   }
+
+  async upgradeUser(userId, roleName: string): Promise<User> {
+    try {
+      const updatedUser = (await this.userRepository.findOne({
+        _id: this.userRepository.toObjectId(userId),
+      })) as User
+
+      const role = await this.roleRepository.findOne({
+        name: roleName,
+      })
+
+      if (!role) throw new BadRequestException("Role not found")
+      if (updatedUser.roles.includes(role._id))
+        throw new BadRequestException("User already has this role")
+
+      await this.userRepository.update(
+        { _id: this.userRepository.toObjectId(userId) },
+        { roles: [role._id] },
+      )
+
+      return updatedUser
+    } catch (error) {
+      throw new BadRequestException(formatErrorResponse(error))
+    }
+  }
 }
